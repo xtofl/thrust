@@ -77,15 +77,20 @@ int main(void)
  
   // print data series
   std::cout << "data series: [ ";
-  for (size_t i = 0; i < data.size(); i++)
-    std::cout << data[i] << " ";
+  std::copy(data.begin(), data.end(), std::ostream_iterator<float>(std::cout, " "));
   std::cout << "]" << std::endl;
 
   // print moving averages
   std::cout << "simple moving averages (window = " << w << ")" << std::endl;
-  for (size_t i = 0; i < averages.size(); i++)
-    std::cout << "  [" << std::setw(2) << i << "," << std::setw(2) << (i + w) << ") = " << averages[i] << std::endl;
-
+  std::copy(
+      thrust::zip_iterator( thrust::counting_iterator(0), averages.begin() ),
+      thrust::zip_iterator( thrust::counting_iterator(), averages.end() ),
+      std::ostream_iterator< thrust::Tuple<int, float> >(std::cout, "\n"),
+      [](auto t) {
+          return "[" + std::to_string(thrust::get<0>(t)) + ", " + std::to_string(thrust::get<0>(t) + w)
+             + ") = " + thrust::get<1>(t);
+      });
+     
   return 0;
 }
 
